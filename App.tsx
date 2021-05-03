@@ -1,21 +1,55 @@
-import { StatusBar } from 'expo-status-bar';
-import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useEffect } from 'react';
 
-export default function App() {
-  return (
-    <View style={styles.container}>
-      <Text>Open up App.tsx to start working on your app!</Text>
-      <StatusBar style="auto" />
-    </View>
-  );
+import * as Notifications from 'expo-notifications';
+
+import AppLoading from 'expo-app-loading';
+import { useFonts, Jost_400Regular, Jost_600SemiBold } from '@expo-google-fonts/jost';
+
+import Routes from './src/routes';
+import { StatusBar } from 'expo-status-bar';
+
+interface PlantProps {
+  id: number;
+  name: string;
+  about: string;
+  water_tips: string;
+  photo: string;
+  environments: [string];
+  frequency: {
+    times: number;
+    repeat_every: string;
+  };
+  hour?: string;
+  dateTimeNotification: Date;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fff',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-});
+export default function App() {
+  const [fontsLoaded] = useFonts({
+    Jost_400Regular,
+    Jost_600SemiBold
+  });
+
+  useEffect(() => {
+    const subscription = Notifications
+      .addNotificationReceivedListener(
+        async ({ request }) => {
+          const plant = request.content.data.plant as PlantProps;
+          console.log(plant);
+        });
+        
+        return function removeSubscription() {
+          subscription.remove();
+        }
+  }, []);
+
+  if (!fontsLoaded) {
+    return <AppLoading />;
+  }
+
+  return (
+    <>
+      <StatusBar />
+      <Routes />
+    </>
+  );
+}
